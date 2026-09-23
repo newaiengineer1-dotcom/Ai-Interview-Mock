@@ -207,6 +207,112 @@ textarea, input {
 .chip-gap { background: rgba(239,68,68,0.15); color:#fca5a5; }
 .tag      { background: rgba(34,211,238,0.10); color:#67e8f9;
             border:1px solid rgba(34,211,238,0.25);}
+
+/* ==================== PRO DASHBOARD STYLES ==================== */
+
+/* KPI card with icon + trend */
+.kpi-row { display:grid; grid-template-columns: repeat(4, 1fr); gap:14px; margin:6px 0 20px 0;}
+.kpi {
+  background: linear-gradient(145deg, rgba(15,23,42,0.85), rgba(11,18,32,0.85));
+  border: 1px solid rgba(34,211,238,0.18);
+  border-radius: 16px; padding: 18px 18px 16px 18px;
+  position: relative; overflow: hidden;
+  box-shadow: 0 14px 32px rgba(0,0,0,0.35);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+.kpi:hover { transform: translateY(-2px); border-color: rgba(34,211,238,0.40); }
+.kpi::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:3px;
+  background: linear-gradient(90deg,#22d3ee,#8b5cf6);
+}
+.kpi .icon {
+  width:36px; height:36px; border-radius:10px;
+  background: rgba(34,211,238,0.10);
+  display:flex; align-items:center; justify-content:center;
+  font-size:18px; margin-bottom: 10px;
+  border: 1px solid rgba(34,211,238,0.22);
+}
+.kpi .val { font-size: 1.9rem; font-weight: 800; color:#f1f5f9;
+            line-height:1; letter-spacing:-0.02em; }
+.kpi .lbl { font-size: 11px; color:#94a3b8; text-transform:uppercase;
+            letter-spacing:0.12em; margin-top:6px; font-weight:600; }
+.kpi .trend { font-size: 11px; margin-top:8px; font-weight:600; }
+.trend-up   { color:#6ee7b7; }
+.trend-down { color:#fca5a5; }
+.trend-flat { color:#94a3b8; }
+
+/* Section title */
+.section-title {
+  display:flex; align-items:center; gap:10px;
+  font-size: 15px; font-weight:700; color:#f1f5f9;
+  margin: 22px 0 12px 0; letter-spacing:-0.01em;
+}
+.section-title::before {
+  content:''; width: 4px; height: 18px; border-radius:2px;
+  background: linear-gradient(180deg,#22d3ee,#8b5cf6);
+}
+.section-title .count {
+  margin-left:auto; font-size:11px; color:#67e8f9;
+  background: rgba(34,211,238,0.10); padding:3px 10px;
+  border-radius:999px; border:1px solid rgba(34,211,238,0.25);
+  font-weight:600; letter-spacing:0.06em;
+}
+
+/* Session card row */
+.session-row {
+  display:flex; align-items:center; justify-content:space-between;
+  background: rgba(15,23,42,0.6);
+  border: 1px solid rgba(148,163,184,0.10);
+  border-radius: 12px; padding: 14px 18px; margin-bottom: 8px;
+  transition: border-color 0.2s, background 0.2s;
+}
+.session-row:hover {
+  border-color: rgba(34,211,238,0.35);
+  background: rgba(15,23,42,0.85);
+}
+.session-row .sid {
+  font-family: 'SF Mono', Menlo, monospace;
+  font-size: 12px; color:#67e8f9; font-weight:700;
+  min-width: 60px;
+}
+.session-row .meta { flex:1; margin-left: 18px; }
+.session-row .role { font-weight:600; color:#e2e8f0; font-size:13px; }
+.session-row .sub  { font-size:11px; color:#64748b; margin-top:2px;
+                     letter-spacing:0.02em;}
+.session-row .score {
+  font-size: 1.15rem; font-weight: 800;
+  padding: 4px 12px; border-radius: 8px; margin-right: 12px;
+}
+.score-hi  { color:#6ee7b7; background: rgba(16,185,129,0.10);
+             border:1px solid rgba(16,185,129,0.30); }
+.score-mid { color:#fde047; background: rgba(250,204,21,0.10);
+             border:1px solid rgba(250,204,21,0.30); }
+.score-lo  { color:#fca5a5; background: rgba(239,68,68,0.10);
+             border:1px solid rgba(239,68,68,0.30); }
+
+/* Progress bar */
+.pbar { width:100%; height:6px; background: rgba(148,163,184,0.12);
+        border-radius:999px; overflow:hidden; margin-top:10px; }
+.pbar-fill { height:100%; background: linear-gradient(90deg,#22d3ee,#8b5cf6);
+             border-radius:999px; transition: width 0.4s ease; }
+
+/* Danger button */
+.danger-btn {
+  background: rgba(239,68,68,0.12) !important;
+  border:1px solid rgba(239,68,68,0.35) !important;
+  color:#fca5a5 !important;
+}
+.danger-btn:hover { background: rgba(239,68,68,0.22) !important; }
+
+/* Empty state */
+.empty {
+  text-align:center; padding: 46px 20px;
+  border:1px dashed rgba(148,163,184,0.20);
+  border-radius:14px; color:#64748b;
+}
+.empty .ico { font-size: 42px; margin-bottom:10px; opacity:0.6;}
+.empty .h   { font-size: 15px; color:#cbd5e1; font-weight:600; }
+.empty .p   { font-size: 12px; margin-top:6px; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -265,6 +371,7 @@ def _init_state():
         "speech_metrics": None, "coding_result": None,
         "_last_transcript": "", "_last_groundedness": None,
         "candidate_name": "Alex Chen",
+        "_view_session": None,
     }
     for k, v in defaults.items():
         st.session_state.setdefault(k, v)
@@ -390,7 +497,6 @@ tabs = st.tabs(["🎙️ 1. Live Interview", "📊 2. Evaluation",
 # TAB 1 — LIVE INTERVIEW
 # ============================================================
 with tabs[0]:
-    # --- question header ---
     st.markdown(f"""
     <div class="qhead">
       <div class="qhead-title">Question {q_now} of {total_q} · {st.session_state.itype}</div>
@@ -401,7 +507,6 @@ with tabs[0]:
     </div>
     """, unsafe_allow_html=True)
 
-    # --- start button ---
     if st.session_state.manager is None:
         c1, c2, c3 = st.columns([1, 2, 1])
         with c2:
@@ -427,11 +532,9 @@ with tabs[0]:
                     st.session_state.current_question = q
                     st.rerun()
 
-    # --- main two-column studio layout ---
     if st.session_state.manager and st.session_state.current_question:
         left, right = st.columns([1.05, 1], gap="large")
 
-        # ---------------- LEFT: AI question panel ----------------
         with left:
             st.markdown(f"""
             <div class="panel">
@@ -449,7 +552,6 @@ with tabs[0]:
             </div>
             """, unsafe_allow_html=True)
 
-            # Active evaluation focus chips
             weak = (st.session_state.manager.weak_areas[-3:]
                     if st.session_state.manager else [])
             if weak:
@@ -462,7 +564,6 @@ with tabs[0]:
                 </div>
                 """, unsafe_allow_html=True)
 
-            # Senior tip
             st.markdown(f"""
             <div class="panel">
               <div class="panel-title">💡 Interviewer Tip</div>
@@ -474,7 +575,6 @@ with tabs[0]:
             </div>
             """, unsafe_allow_html=True)
 
-        # ---------------- RIGHT: answer + live metrics ----------------
         with right:
             mode = st.radio("Answer Mode", ["🎙️ Voice", "⌨️ Text"],
                             horizontal=True, key="answer_mode",
@@ -528,7 +628,6 @@ with tabs[0]:
                     placeholder="Type your answer — be specific, concise, "
                                 "reference your real experience…")
 
-            # live metrics row
             m = st.session_state.speech_metrics or {
                 "wpm": 0, "filler_total": 0, "duration_sec": 0, "clarity": 0,
                 "words": 0,
@@ -555,7 +654,6 @@ with tabs[0]:
             with b3:
                 finish = st.button("🏁 Finish & Save", use_container_width=True)
 
-            # ---- SUBMIT ----
             if submit or skip:
                 if not answer_text and not skip:
                     st.warning("Provide an answer or skip.")
@@ -602,7 +700,6 @@ with tabs[0]:
                     st.session_state["_last_transcript"] = ""
                     st.rerun()
 
-            # ---- FINISH ----
             if finish and st.session_state.history:
                 avg = (sum(h["evaluation"].get("overall", 0)
                            for h in st.session_state.history)
@@ -612,7 +709,6 @@ with tabs[0]:
                                metrics=st.session_state.speech_metrics or {})
                 st.success(f"Session #{st.session_state.session_id} saved · avg {avg:.1f}/10")
 
-        # ---------------- Feedback under the fold ----------------
         if st.session_state.history:
             st.markdown("---")
             st.markdown("### 🔍 Feedback — Latest Answer")
@@ -680,7 +776,6 @@ with tabs[0]:
                 <div class="panel-sub">{"<br>".join("• "+m for m in ev.get("missed",[])) or "—"}</div></div>
                 """, unsafe_allow_html=True)
 
-            # export
             md = build_markdown_report(
                 st.session_state.role, st.session_state.itype,
                 st.session_state.personality, st.session_state.history,
@@ -855,93 +950,324 @@ with tabs[3]:
 
 
 # ============================================================
-# TAB 5 — DASHBOARD
+# TAB 5 — DASHBOARD (Professional)
 # ============================================================
 with tabs[4]:
-    st.markdown("### 📈 Executive Dashboard")
     hist = st.session_state.history
-    if not hist:
-        st.info("Complete at least one question first.")
+    sessions = get_sessions()
+    stats = get_session_stats()
+
+    total_q_now = len(hist)
+    avg_now = (sum(h["evaluation"].get("overall", 0) for h in hist) / total_q_now
+               if total_q_now else 0)
+    best_q = max((h["evaluation"].get("overall", 0) for h in hist), default=0)
+    grounded_ok = sum(1 for h in hist
+                      if h.get("groundedness", {}).get("grounded", True))
+    grounded_pct = int((grounded_ok / total_q_now) * 100) if total_q_now else 0
+
+    trend_html = '<span class="trend trend-flat">— no baseline</span>'
+    if len(sessions) >= 2 and sessions[0]["avg_score"]:
+        prev = sessions[1]["avg_score"] or 0
+        cur = sessions[0]["avg_score"] or 0
+        if prev > 0:
+            delta = cur - prev
+            if delta > 0.3:
+                trend_html = f'<span class="trend trend-up">▲ +{delta:.1f} vs last</span>'
+            elif delta < -0.3:
+                trend_html = f'<span class="trend trend-down">▼ {delta:.1f} vs last</span>'
+            else:
+                trend_html = '<span class="trend trend-flat">● flat vs last</span>'
+
+    st.markdown(f"""
+    <div class="kpi-row">
+      <div class="kpi">
+        <div class="icon">🎯</div>
+        <div class="val">{total_q_now}</div>
+        <div class="lbl">Questions This Session</div>
+        {trend_html}
+      </div>
+      <div class="kpi">
+        <div class="icon">📊</div>
+        <div class="val">{avg_now:.1f}</div>
+        <div class="lbl">Current Average</div>
+        <span class="trend trend-flat">out of 10.0</span>
+      </div>
+      <div class="kpi">
+        <div class="icon">🏆</div>
+        <div class="val">{best_q:.1f}</div>
+        <div class="lbl">Best Answer</div>
+        <span class="trend trend-up">peak score</span>
+      </div>
+      <div class="kpi">
+        <div class="icon">🛡️</div>
+        <div class="val">{grounded_pct}%</div>
+        <div class="lbl">Groundedness</div>
+        <span class="trend trend-flat">anti-hallucination</span>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    if not hist and not sessions:
+        st.markdown("""
+        <div class="empty">
+          <div class="ico">📭</div>
+          <div class="h">No interview data yet</div>
+          <div class="p">Start an interview in Tab 1 to see your analytics here.</div>
+        </div>
+        """, unsafe_allow_html=True)
     else:
-        summary = _summary_scores(hist)
-        c1, c2 = st.columns(2)
+        st.markdown('<div class="section-title">Performance Overview '
+                    '<span class="count">LIVE</span></div>',
+                    unsafe_allow_html=True)
+
+        c1, c2 = st.columns([1, 1])
         with c1:
-            st.markdown("#### 🕸 Competency Radar")
+            summary = _summary_scores(hist) if hist else {d: 0 for d in DIMENSIONS}
             st.plotly_chart(_radar_fig(summary),
                             use_container_width=True, key="dash_radar")
         with c2:
-            st.markdown("#### 📊 Score Trajectory")
-            df = pd.DataFrame({
-                "Q": [f"Q{i+1}" for i in range(len(hist))],
-                "Score": [h["evaluation"].get("overall", 0) for h in hist]})
-            fig = px.line(df, x="Q", y="Score", markers=True)
-            fig.update_traces(line_color="#22d3ee", marker=dict(size=10))
-            fig.update_layout(plot_bgcolor="rgba(0,0,0,0)",
-                              paper_bgcolor="rgba(0,0,0,0)",
-                              font_color="#e2e8f0", yaxis_range=[0,10],
-                              height=360)
-            st.plotly_chart(fig, use_container_width=True)
+            if hist:
+                df = pd.DataFrame({
+                    "Q": [f"Q{i+1}" for i in range(len(hist))],
+                    "Score": [h["evaluation"].get("overall", 0) for h in hist]})
+                fig = px.line(df, x="Q", y="Score", markers=True)
+                fig.update_traces(line_color="#22d3ee", line_width=3,
+                                  marker=dict(size=12, color="#8b5cf6",
+                                              line=dict(color="#22d3ee", width=2)))
+                fig.update_layout(
+                    title=dict(text="Question-by-Question Trajectory",
+                               font=dict(color="#e2e8f0", size=14)),
+                    plot_bgcolor="rgba(0,0,0,0)",
+                    paper_bgcolor="rgba(0,0,0,0)",
+                    font_color="#e2e8f0", yaxis_range=[0, 10], height=360,
+                    xaxis=dict(gridcolor="rgba(148,163,184,0.10)"),
+                    yaxis=dict(gridcolor="rgba(148,163,184,0.10)"))
+                st.plotly_chart(fig, use_container_width=True)
+            else:
+                st.info("Complete a question to see the trajectory.")
 
-        st.markdown("#### 🧭 Preparation Matrix")
-        weak = st.session_state.manager.weak_areas if st.session_state.manager else []
-        strong = st.session_state.manager.strong_areas if st.session_state.manager else []
-        m1, m2 = st.columns(2)
-        with m1:
-            st.markdown("**🔥 High Priority**")
-            for w in (weak or ["—"]):
-                st.markdown(f'<span class="chip-gap">{w}</span>',
-                            unsafe_allow_html=True)
-        with m2:
-            st.markdown("**✓ Strong**")
-            for s in (strong or ["—"]):
-                st.markdown(f'<span class="chip-ok">{s}</span>',
-                            unsafe_allow_html=True)
-
-        if st.session_state.speech_metrics:
-            st.markdown("#### 🎙 Speech Analytics")
-            m = st.session_state.speech_metrics
-            for col, label, val in [
-                (st.columns(4)[0], "WPM", m["wpm"]),
-                (st.columns(4)[1], "Fillers", m["filler_total"]),
-                (st.columns(4)[2], "Words", m["words"]),
-                (st.columns(4)[3], "Clarity", f'{m["clarity"]}/10')]:
+        if stats["total"] > 0:
+            st.markdown('<div class="section-title">All-Time Statistics '
+                        '<span class="count">SQLITE</span></div>',
+                        unsafe_allow_html=True)
+            s1, s2, s3, s4 = st.columns(4)
+            for col, icon, label, val, color in [
+                (s1, "📁", "Total Sessions", stats["total"], "#67e8f9"),
+                (s2, "📈", "Avg Score", f'{stats["avg_score"]:.1f}', "#a5b4fc"),
+                (s3, "🥇", "Best Session", f'{stats["best_score"]:.1f}', "#6ee7b7"),
+                (s4, "📉", "Lowest Session", f'{stats["worst_score"]:.1f}', "#fca5a5"),
+            ]:
                 with col:
                     st.markdown(f"""
-                    <div class="mtile"><div class="v">{val}</div>
-                    <div class="l">{label}</div></div>
+                    <div class="kpi">
+                      <div class="icon">{icon}</div>
+                      <div class="val" style="color:{color};">{val}</div>
+                      <div class="lbl">{label}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+            if len(sessions) > 1:
+                st.markdown('<div class="section-title">Session Progression</div>',
+                            unsafe_allow_html=True)
+                df2 = pd.DataFrame(sessions).sort_values("id")
+                fig2 = px.area(df2, x="id", y="avg_score", markers=True)
+                fig2.update_traces(line_color="#8b5cf6", line_width=3,
+                                   fillcolor="rgba(139,92,246,0.15)",
+                                   marker=dict(size=10, color="#22d3ee"))
+                fig2.update_layout(
+                    plot_bgcolor="rgba(0,0,0,0)",
+                    paper_bgcolor="rgba(0,0,0,0)",
+                    font_color="#e2e8f0", yaxis_range=[0, 10], height=300,
+                    xaxis=dict(gridcolor="rgba(148,163,184,0.10)",
+                               title="Session ID"),
+                    yaxis=dict(gridcolor="rgba(148,163,184,0.10)",
+                               title="Avg Score"))
+                st.plotly_chart(fig2, use_container_width=True)
+
+        if hist:
+            st.markdown('<div class="section-title">Preparation Matrix</div>',
+                        unsafe_allow_html=True)
+            weak = st.session_state.manager.weak_areas if st.session_state.manager else []
+            strong = st.session_state.manager.strong_areas if st.session_state.manager else []
+            m1, m2 = st.columns(2)
+            with m1:
+                st.markdown("**🔥 High Priority**")
+                for w in (weak or ["—"]):
+                    st.markdown(f'<span class="chip-gap">{w}</span>',
+                                unsafe_allow_html=True)
+            with m2:
+                st.markdown("**✓ Strong / Interview Ready**")
+                for s in (strong or ["—"]):
+                    st.markdown(f'<span class="chip-ok">{s}</span>',
+                                unsafe_allow_html=True)
+
+        if st.session_state.speech_metrics:
+            st.markdown('<div class="section-title">Speech Analytics</div>',
+                        unsafe_allow_html=True)
+            m = st.session_state.speech_metrics
+            sa, sb, sc, sd = st.columns(4)
+            for col, icon, label, val in [
+                (sa, "🗣️", "WPM", m["wpm"]),
+                (sb, "💬", "Fillers", m["filler_total"]),
+                (sc, "📝", "Words", m["words"]),
+                (sd, "✨", "Clarity", f'{m["clarity"]}/10')]:
+                with col:
+                    st.markdown(f"""
+                    <div class="kpi">
+                      <div class="icon">{icon}</div>
+                      <div class="val">{val}</div>
+                      <div class="lbl">{label}</div>
+                    </div>
                     """, unsafe_allow_html=True)
 
 
 # ============================================================
-# TAB 6 — HISTORY
+# TAB 6 — HISTORY (with delete)
 # ============================================================
 with tabs[5]:
-    st.markdown("### 📁 Session History")
     sessions = get_sessions()
+
+    st.markdown('<div class="section-title">Session History '
+                f'<span class="count">{len(sessions)} SAVED</span></div>',
+                unsafe_allow_html=True)
+
     if not sessions:
-        st.info("No saved sessions yet.")
+        st.markdown("""
+        <div class="empty">
+          <div class="ico">📂</div>
+          <div class="h">No saved sessions</div>
+          <div class="p">Finish an interview in Tab 1 to save it here.</div>
+        </div>
+        """, unsafe_allow_html=True)
     else:
-        df = pd.DataFrame(sessions)[[
-            "id", "created_at", "role", "interview_type",
-            "personality", "difficulty", "avg_score"]]
-        st.dataframe(df, use_container_width=True, hide_index=True)
+        c1, c2, c3 = st.columns([2, 1, 1])
+        with c1:
+            search = st.text_input(
+                "🔍 Search by role",
+                placeholder="e.g. Backend, Data, Frontend…",
+                label_visibility="collapsed")
+        with c2:
+            sort_by = st.selectbox(
+                "Sort", ["Newest first", "Oldest first",
+                         "Highest score", "Lowest score"],
+                label_visibility="collapsed")
+        with c3:
+            confirm_wipe = st.checkbox("Enable wipe-all",
+                                       help="Unlock bulk deletion")
 
-        if len(sessions) > 1:
-            df2 = pd.DataFrame(sessions).sort_values("id")
-            fig = px.line(df2, x="id", y="avg_score", markers=True,
-                          title="Performance Progression")
-            fig.update_traces(line_color="#8b5cf6")
-            fig.update_layout(plot_bgcolor="rgba(0,0,0,0)",
-                              paper_bgcolor="rgba(0,0,0,0)",
-                              font_color="#e2e8f0", yaxis_range=[0,10])
-            st.plotly_chart(fig, use_container_width=True)
+        data = list(sessions)
+        if search:
+            s_low = search.lower()
+            data = [s for s in data
+                    if s_low in (s.get("role") or "").lower()
+                    or s_low in (s.get("interview_type") or "").lower()]
+        if sort_by == "Newest first":
+            data.sort(key=lambda x: x["id"], reverse=True)
+        elif sort_by == "Oldest first":
+            data.sort(key=lambda x: x["id"])
+        elif sort_by == "Highest score":
+            data.sort(key=lambda x: x.get("avg_score") or 0, reverse=True)
+        elif sort_by == "Lowest score":
+            data.sort(key=lambda x: x.get("avg_score") or 0)
 
-        sid = st.selectbox("View session", [s["id"] for s in sessions])
-        for i, t in enumerate(get_turns(sid), 1):
-            ev = t.get("evaluation", {})
-            with st.expander(f"Q{i}: {t['question'][:80]} — {float(ev.get('overall',0)):.1f}/10"):
-                st.markdown(f"**Answer:** {t['answer']}")
-                if ev.get("ideal_answer"):
-                    st.markdown(f"**Ideal:** {ev['ideal_answer']}")
-                if ev.get("suggested_best_answer"):
-                    st.markdown(f"**💡 Suggested:** {ev['suggested_best_answer']}")
+        if confirm_wipe:
+            st.warning("⚠️ Wipe-all is enabled. This cannot be undone.")
+            if st.button("🗑 Delete ALL Sessions", type="secondary",
+                         use_container_width=True):
+                delete_all_sessions()
+                st.success("All sessions deleted.")
+                st.rerun()
+
+        st.markdown("")
+
+        for s in data:
+            score = float(s.get("avg_score") or 0)
+            if score >= 7.5:
+                s_cls = "score-hi"
+            elif score >= 5.0:
+                s_cls = "score-mid"
+            else:
+                s_cls = "score-lo"
+
+            created = (s.get("created_at") or "")[:16].replace("T", " ")
+
+            col_info, col_score, col_view, col_del = st.columns(
+                [6, 1.2, 1, 1])
+
+            with col_info:
+                st.markdown(f"""
+                <div class="session-row" style="margin-bottom:0;">
+                  <div class="sid">#{s['id']}</div>
+                  <div class="meta">
+                    <div class="role">{s.get('role','—')}</div>
+                    <div class="sub">
+                      {s.get('interview_type','—')} · {s.get('personality','—')}
+                      · {s.get('difficulty','—')} · {created}
+                    </div>
+                  </div>
+                </div>
+                """, unsafe_allow_html=True)
+            with col_score:
+                st.markdown(
+                    f'<div class="{s_cls}" '
+                    f'style="text-align:center;padding:12px 0;'
+                    f'border-radius:10px;font-weight:800;font-size:1.05rem;">'
+                    f'{score:.1f}</div>',
+                    unsafe_allow_html=True)
+            with col_view:
+                if st.button("👁 View", key=f"view_{s['id']}",
+                             use_container_width=True):
+                    st.session_state["_view_session"] = s["id"]
+            with col_del:
+                if st.button("🗑 Delete", key=f"del_{s['id']}",
+                             use_container_width=True):
+                    delete_session(s["id"])
+                    st.success(f"Session #{s['id']} deleted.")
+                    st.rerun()
+
+        view_id = st.session_state.get("_view_session")
+        if view_id:
+            st.markdown('<div class="section-title">'
+                        f'Session #{view_id} Details</div>',
+                        unsafe_allow_html=True)
+            turns = get_turns(view_id)
+            if not turns:
+                st.info("No turns recorded in this session.")
+            else:
+                for i, t in enumerate(turns, 1):
+                    ev = t.get("evaluation", {})
+                    score = float(ev.get("overall", 0))
+                    with st.expander(
+                            f"Q{i} · {t['question'][:80]} — {score:.1f}/10"):
+                        st.markdown(f"**Your answer:** {t['answer']}")
+                        st.markdown(f"**Verdict:** {ev.get('verdict','—')}")
+                        if ev.get("ideal_answer"):
+                            st.markdown(f"**Ideal:** {ev['ideal_answer']}")
+                        if ev.get("suggested_best_answer"):
+                            st.markdown(
+                                f"**💡 Suggested:** {ev['suggested_best_answer']}")
+
+            c1, c2 = st.columns(2)
+            with c1:
+                if st.button("⬇ Export this session (MD)",
+                             use_container_width=True):
+                    sess = next((x for x in sessions if x["id"] == view_id),
+                                sessions[0])
+                    md = build_markdown_report(
+                        sess.get("role", ""),
+                        sess.get("interview_type", ""),
+                        sess.get("personality", ""),
+                        [{"question": t["question"], "answer": t["answer"],
+                          "evaluation": t.get("evaluation", {})}
+                         for t in turns],
+                        {d: 0 for d in DIMENSIONS})
+                    st.download_button(
+                        "Click to download",
+                        md,
+                        file_name=f"session_{view_id}.md",
+                        mime="text/markdown",
+                        use_container_width=True)
+            with c2:
+                if st.button("✖ Close details", use_container_width=True):
+                    st.session_state["_view_session"] = None
+                    st.rerun()
