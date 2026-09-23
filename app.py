@@ -4,8 +4,7 @@ import tempfile
 from datetime import datetime
 from pathlib import Path
 ROOT_DIR = Path(__file__).resolve().parent
-if str(ROOT_DIR) not in sys.path:
-    sys.path.insert(0, str(ROOT_DIR))import streamlit as st import pandas as pd import plotly.express as px
+if str(ROOT_DIR) not in sys.path: sys.path.insert(0, str(ROOT_DIR))import streamlit as st import pandas as pd import plotly.express as px
 import plotly.graph_objects as go from database.db import init_db, create_session, add_turn, update_session, get_sessions, get_turns, delete_session, delete_all_sessions, get_session_stats
 from services.groq_service import chat, transcribe, DEFAULT_MODEL
 from rag.loader import read_file, split_sections, RESUME_SECTIONS, JD_SECTIONS
