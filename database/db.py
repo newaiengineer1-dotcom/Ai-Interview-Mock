@@ -1,82 +1,28 @@
-import sqlite3
-import json
-from datetime import datetime
-from pathlib import Path
-
-DB_PATH = Path("interview_history.db")
-
-def _conn():
-    c = sqlite3.connect(DB_PATH, check_same_thread=False)
-    c.row_factory = sqlite3.Row
-    return c
-
-def init_db():
+def delete_session(session_id):
+    """Delete a session and all its turns."""
     with _conn() as c:
-        c.execute("""
-        CREATE TABLE IF NOT EXISTS sessions (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            created_at TEXT,
-            role TEXT,
-            interview_type TEXT,
-            personality TEXT,
-            difficulty TEXT,
-            avg_score REAL DEFAULT 0,
-            summary TEXT,
-            metrics TEXT
-        )""")
-        c.execute("""
-        CREATE TABLE IF NOT EXISTS turns (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            session_id INTEGER,
-            idx INTEGER,
-            question TEXT,
-            answer TEXT,
-            evaluation TEXT,
-            scores TEXT,
-            created_at TEXT
-        )""")
+        c.execute("DELETE FROM turns WHERE session_id=?", (session_id,))
+        c.execute("DELETE FROM sessions WHERE id=?", (session_id,))
+    return True
 
-def create_session(role, itype, personality, difficulty):
-    with _conn() as c:
-        cur = c.execute(
-            "INSERT INTO sessions(created_at, role, interview_type, personality, difficulty, avg_score) "
-            "VALUES(?,?,?,?,?,?)",
-            (datetime.utcnow().isoformat(), role, itype, personality, difficulty, 0.0),
-        )
-        return cur.lastrowid
 
-def add_turn(session_id, idx, question, answer, evaluation, scores):
+def delete_all_sessions():
+    """Wipe all sessions and turns."""
     with _conn() as c:
-        c.execute(
-            "INSERT INTO turns(session_id, idx, question, answer, evaluation, scores, created_at) "
-            "VALUES(?,?,?,?,?,?,?)",
-            (session_id, idx, question, answer, json.dumps(evaluation),
-             json.dumps(scores), datetime.utcnow().isoformat()),
-        )
+        c.execute("DELETE FROM turns")
+        c.execute("DELETE FROM sessions")
+    return True
 
-def update_session(session_id, avg_score, summary=None, metrics=None):
-    with _conn() as c:
-        c.execute(
-            "UPDATE sessions SET avg_score=?, summary=?, metrics=? WHERE id=?",
-            (avg_score, summary, json.dumps(metrics or {}), session_id),
-        )
 
-def get_sessions():
+def get_session_stats():
+    """Return aggregate stats for the dashboard."""
     with _conn() as c:
-        return [dict(r) for r in c.execute("SELECT * FROM sessions ORDER BY id DESC").fetchall()]
-
-def get_turns(session_id):
-    with _conn() as c:
-        rows = [dict(r) for r in c.execute(
-            "SELECT * FROM turns WHERE session_id=? ORDER BY idx", (session_id,)
-        ).fetchall()]
-    for r in rows:
-        try:
-            r["scores"] = json.loads(r["scores"] or "{}")
-        except Exception:
-            r["scores"] = {}
-        try:
-            r["evaluation"] = json.loads(r["evaluation"] or "{}")
-        except Exception:
-            r["evaluation"] = {}
-    return rows
+        row = c.execute("""
+            SELECT COUNT(*) as total,
+                   COALESCE(AVG(avg_score), 0) as avg_score,
+                   COALESCE(MAX(avg_score), 0) as best_score,
+                   COALESCE(MIN(avg_score), 0) as worst_score
+            FROM sessions WHERE avg_score > 0
+        """).fetchone()
+        return dict(row) if row else {
+            "total": 0, "avg_score": 0, "best_score": 0, "worst_score": 0}
