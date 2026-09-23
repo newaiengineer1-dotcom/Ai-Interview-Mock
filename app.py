@@ -8,7 +8,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 from database.db import (init_db, create_session, add_turn, update_session,
-                         get_sessions, get_turns)
+                         get_sessions, get_turns, delete_session,
+                         delete_all_sessions, get_session_stats)
 from services.groq_service import chat, transcribe, DEFAULT_MODEL
 from rag.loader import read_file, split_sections, RESUME_SECTIONS, JD_SECTIONS
 from rag.chunker import build_index
