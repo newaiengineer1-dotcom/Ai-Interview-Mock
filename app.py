@@ -2262,9 +2262,3 @@ groq>=0.30,<1
 """
 
 # A clear README focused on the corrected import and deployment.
-readme = r"""# InterviewAI Studio — Corrected Streamlit App
-
-This version fixes the common **line 9 import error**:
-
-```python
-from database.db import ...
