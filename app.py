@@ -15,8 +15,8 @@ from rag.loader import read_file, split_sections, RESUME_SECTIONS, JD_SECTIONS
 from rag.chunker import build_index
 from rag.retriever import CategoryRetriever
 from agents.interviewer import generate_question, PERSONALITIES, INTERVIEW_TYPES
-from agents.evaluator import (evaluate_answer, evaluate_code,
-                              check_groundedness, DIMENSIONS)
+from agents.evaluator import evaluate_answer, evaluate_code
+from agents.evaluator import check_groundedness, DIMENSIONS
 from agents.manager import InterviewManager, DIFFICULTY_LEVELS
 from services.resume_service import analyze_resume_jd
 from services.report_service import build_markdown_report, build_html_report
